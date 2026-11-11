@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Postaí — Gerador de posts para redes sociais</title>
+    <meta
+      name="description"
+      content="Transforme qualquer assunto em legenda, hashtags, CTA e imagem pronta — com filtro e texto na foto, no tom certo para Instagram, TikTok e LinkedIn."
+    />
+    <meta name="theme-color" content="#6C4CF5" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <script>
+      // Aplica o tema antes do primeiro paint para evitar flash.
+      (function () {
+        try {
+          var saved = localStorage.getItem('postai.theme');
+          var theme =
+            saved === 'light' || saved === 'dark'
+              ? saved
+              : window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light';
+          document.documentElement.dataset.theme = theme;
+        } catch (error) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content="Postaí" />
+    <meta property="og:title" content="Postaí — Ideias que viram conversa" />
+    <meta
+      property="og:description"
+      content="Legenda, hashtags, CTA e ideia de imagem para Instagram, TikTok e LinkedIn."
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@1,400;1,500;1,600&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script type="module" crossorigin src="/assets/index-C2w3ktHv.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-Q63x0rua.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

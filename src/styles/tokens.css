@@ -1,0 +1,243 @@
+/* ==========================================================================
+   Postaí — Design tokens
+   Fonte: Postaí Style Guide v1.0 (Social AI)
+
+   Paleta do guia:
+     Criativo  #6C4CF5  ·  Humano   #FF8068
+     Fresco    #C9EEDB  ·  Tinta    #201932
+     Papel     #F7F5EF  ·  Superfície lilás #EDE8FF
+
+   Regra de uso do guia: 60% base · 25% texto · 10% marca · 5% acento.
+   Nenhum hex solto nos componentes: se faltar uma cor, ela nasce aqui.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* Rampas de marca ------------------------------------------------------ */
+  --brand-50: #f6f3ff;
+  --brand-100: #ede8ff;
+  --brand-200: #dcd3ff;
+  --brand-300: #c2b3ff;
+  --brand-400: #9b85fb;
+  --brand-500: #6c4cf5;
+  --brand-600: #5a3ad9;
+  --brand-700: #462ca8;
+  --brand-800: #33207d;
+
+  --human-50: #fff3f0;
+  --human-100: #ffe4de;
+  --human-200: #ffc8bc;
+  --human-300: #ffa594;
+  --human-400: #ff8068;
+  --human-500: #e85f45;
+  --human-600: #b83d26;
+  --human-700: #8f2e1c;
+
+  --fresh-50: #f2fbf6;
+  --fresh-100: #e3f7ec;
+  --fresh-200: #d3f2e2;
+  --fresh-300: #c9eedb;
+  --fresh-400: #9edbbf;
+  --fresh-500: #3e9b70;
+  --fresh-600: #2c7a56;
+  --fresh-700: #1f5e42;
+
+  --ink: #201932;
+  --canvas: #f7f5ef;
+  --paper: #ffffff;
+  --paper-warm: #fbf9f4;
+  --paper-100: #f2efe8;
+  --paper-200: #e8e3d9;
+  --paper-300: #d8d2c6;
+
+  --muted: #5c566e;
+  --subtle: #6e687d;
+
+  /* Semânticos — tema claro --------------------------------------------- */
+  --bg: var(--canvas);
+  --surface: var(--paper);
+  --surface-warm: var(--paper-warm);
+  --surface-sunken: var(--paper-100);
+  --surface-brand: var(--brand-100);
+  --surface-fresh: var(--fresh-100);
+  --surface-human: var(--human-50);
+  --surface-inverse: var(--ink);
+  --text-inverse: var(--canvas);
+
+  --border: var(--paper-200);
+  --border-strong: var(--paper-300);
+  --border-brand: var(--brand-200);
+  --border-fresh: var(--fresh-200);
+  --border-human: var(--human-200);
+
+  --text: var(--ink);
+  --text-muted: var(--muted);
+  --text-subtle: var(--subtle);
+  --text-brand: var(--brand-600);
+  --text-human: var(--human-600);
+  --text-fresh: var(--fresh-700);
+
+  --primary: var(--brand-500);
+  --primary-hover: var(--brand-600);
+  --primary-active: var(--brand-700);
+  --primary-soft: var(--brand-100);
+  --primary-border: var(--brand-200);
+  --on-primary: #ffffff;
+
+  --secondary: var(--human-400);
+  --secondary-soft: var(--human-100);
+  --secondary-border: var(--human-200);
+  --secondary-text: var(--human-600);
+
+  --accent: var(--fresh-300);
+  --accent-soft: var(--fresh-100);
+  --accent-border: var(--fresh-200);
+  --accent-text: var(--fresh-700);
+
+  --success: var(--fresh-600);
+  --success-soft: var(--fresh-100);
+  --success-border: var(--fresh-200);
+
+  --danger: #a93724;
+  --danger-soft: #fcede9;
+  --danger-border: #f2c9bf;
+  --on-danger: #ffffff;
+
+  /* Tipografia ---------------------------------------------------------- */
+  --font-display: "Manrope", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-accent: "Lora", "Iowan Old Style", Georgia, "Times New Roman", serif;
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-black: 800;
+
+  --fs-display: clamp(2.75rem, 6vw, 5rem);
+  --fs-h1: 2.5rem;
+  --fs-h2: 1.75rem;
+  --fs-h3: 1.25rem;
+  --fs-h4: 1.0625rem;
+  --fs-lg: 1.125rem;
+  --fs-md: 1rem;
+  --fs-sm: 0.875rem;
+  --fs-xs: 0.8125rem;
+  --fs-overline: 0.6875rem;
+
+  --lh-tight: 1.02;
+  --lh-snug: 1.2;
+  --lh-normal: 1.55;
+  --lh-relaxed: 1.72;
+
+  --ls-tight: -0.035em;
+  --ls-snug: -0.02em;
+  --ls-normal: 0;
+  --ls-wide: 0.02em;
+  --ls-wideest: 0.14em;
+
+  /* Espaço -------------------------------------------------------------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 1.75rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-14: 3.5rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+
+  /* Formas -------------------------------------------------------------- */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-2xl: 36px;
+  --radius-full: 999px;
+
+  /* Sombras ------------------------------------------------------------- */
+  --shadow-xs: 0 1px 2px rgb(32 25 50 / 0.05);
+  --shadow-sm: 0 1px 2px rgb(32 25 50 / 0.05), 0 6px 18px rgb(32 25 50 / 0.05);
+  --shadow-md: 0 10px 30px rgb(32 25 50 / 0.08);
+  --shadow-lg: 0 24px 70px rgb(32 25 50 / 0.12);
+  --shadow-brand: 0 18px 40px rgb(108 76 245 / 0.22);
+  --ring: 0 0 0 3px rgb(108 76 245 / 0.2);
+
+  /* Movimento ----------------------------------------------------------- */
+  --dur-1: 120ms;
+  --dur-2: 180ms;
+  --dur-3: 280ms;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Layout -------------------------------------------------------------- */
+  --container: 1240px;
+  --container-narrow: 760px;
+  --header-h: 76px;
+}
+
+/* Tema escuro — carvão arroxeado, não preto puro ------------------------- */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #12101a;
+  --surface: #1b1726;
+  --surface-warm: #211c2e;
+  --surface-sunken: #16121f;
+  --surface-brand: #241e38;
+  --surface-fresh: #173228;
+  --surface-human: #3a221d;
+  --surface-inverse: #f4f1fa;
+  --text-inverse: #1a1330;
+
+  --border: #302a44;
+  --border-strong: #453d5f;
+  --border-brand: #3c315e;
+  --border-fresh: #245040;
+  --border-human: #543128;
+
+  --text: #f4f1fa;
+  --text-muted: #c2bbd4;
+  --text-subtle: #958daa;
+  --text-brand: #c2b3ff;
+  --text-human: #ffb4a5;
+  --text-fresh: #a8e6c8;
+
+  --primary: #b3a2ff;
+  --primary-hover: #c7bbff;
+  --primary-active: #dcd3ff;
+  --primary-soft: #2a2244;
+  --primary-border: #3c315e;
+  --on-primary: #1a1330;
+
+  --secondary: #ff9c89;
+  --secondary-soft: #3a221d;
+  --secondary-border: #543128;
+  --secondary-text: #ffb4a5;
+
+  --accent: #a8e6c8;
+  --accent-soft: #173228;
+  --accent-border: #245040;
+  --accent-text: #a8e6c8;
+
+  --success: #8fe0b8;
+  --success-soft: #173228;
+  --success-border: #245040;
+
+  --danger: #ff9b8a;
+  --danger-soft: #3a1d18;
+  --danger-border: #5a2c25;
+  --on-danger: #1a1330;
+
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 22px rgb(0 0 0 / 0.28);
+  --shadow-md: 0 12px 34px rgb(0 0 0 / 0.36);
+  --shadow-lg: 0 28px 80px rgb(0 0 0 / 0.5);
+  --shadow-brand: 0 18px 40px rgb(0 0 0 / 0.35);
+  --ring: 0 0 0 3px rgb(179 162 255 / 0.3);
+}
