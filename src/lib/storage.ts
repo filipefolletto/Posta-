@@ -1,4 +1,5 @@
 import { isAudienceId } from '../data/audiences';
+import { isImageFontId, recommendedFontFor } from '../data/fonts';
 import { isImageAlign, isImageAnchor } from '../data/formats';
 import { isPlatformId } from '../data/platforms';
 import { isToneId, MAX_TONES } from '../data/tones';
@@ -110,7 +111,7 @@ export function saveBrief(brief: Brief): void {
 /*  Último post                                                               */
 /* -------------------------------------------------------------------------- */
 
-function sanitizeImageText(value: unknown): ImageText | null {
+function sanitizeImageText(value: unknown, brief: Brief): ImageText | null {
   if (!value || typeof value !== 'object') return null;
 
   const raw = value as Partial<ImageText>;
@@ -122,6 +123,7 @@ function sanitizeImageText(value: unknown): ImageText | null {
     enabled: raw.enabled !== false,
     anchor: isImageAnchor(raw.anchor) ? raw.anchor : 'bottom',
     align: isImageAlign(raw.align) ? raw.align : 'left',
+    font: isImageFontId(raw.font) ? raw.font : recommendedFontFor(brief),
   };
 }
 
@@ -139,7 +141,7 @@ export function loadPost(): GeneratedPost | null {
     brief,
     hashtags: raw.hashtags.filter((tag): tag is string => typeof tag === 'string'),
     imageText:
-      sanitizeImageText(raw.imageText) ??
+      sanitizeImageText(raw.imageText, brief) ??
       generateImageText(brief, Number.isFinite(raw.variant) ? raw.variant : 0),
   };
 }

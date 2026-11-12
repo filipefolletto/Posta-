@@ -1,4 +1,5 @@
 import { FILTER_PRESET_MAP } from '../data/filters';
+import { IMAGE_FONT_MAP } from '../data/fonts';
 import { IMAGE_FORMATS } from '../data/formats';
 import type {
   FilterPresetId,
@@ -386,6 +387,26 @@ function applyPreset(
 /*  Render                                                                    */
 /* -------------------------------------------------------------------------- */
 
+async function ensureTextFonts(text: ImageText): Promise<void> {
+  const font = IMAGE_FONT_MAP[text.font] ?? IMAGE_FONT_MAP.manrope;
+  const primaryFamily = font.family.split(',')[0].trim();
+
+  if (document.fonts?.load) {
+    try {
+      await Promise.all([
+        document.fonts.load(`${font.headlineWeight} 64px ${primaryFamily}`),
+        document.fonts.load(
+          `${font.sublineStyle} ${font.sublineWeight} 32px ${primaryFamily}`,
+        ),
+      ]);
+    } catch {
+      // Se a fonte não estiver disponível, o Canvas usa a fallback da família.
+    }
+  }
+
+  await document.fonts.ready;
+}
+
 export async function renderSlideTo(
   target: HTMLCanvasElement,
   photo: PhotoAsset,
@@ -393,7 +414,11 @@ export async function renderSlideTo(
   width?: number,
   height?: number,
 ): Promise<void> {
-  await document.fonts.ready;
+  if (options.text.enabled) {
+    await ensureTextFonts(options.text);
+  } else {
+    await document.fonts.ready;
+  }
 
   const spec = IMAGE_FORMATS[options.format];
   const targetWidth = width ?? spec.width;
@@ -471,10 +496,11 @@ function drawTextOverlay(
 
   const margin = width * 0.075;
   const maxWidth = width - margin * 2;
-  const headlineSize = Math.round(width * 0.075);
-  const sublineSize = Math.round(width * 0.033);
-  const headlineFont = `800 ${headlineSize}px Manrope, "Segoe UI", system-ui, sans-serif`;
-  const sublineFont = `italic 500 ${sublineSize}px Lora, Georgia, "Times New Roman", serif`;
+  const fontPreset = IMAGE_FONT_MAP[text.font] ?? IMAGE_FONT_MAP.manrope;
+  const headlineSize = Math.round(width * 0.075 * fontPreset.headlineScale);
+  const sublineSize = Math.round(width * 0.033 * fontPreset.sublineScale);
+  const headlineFont = `${fontPreset.headlineWeight} ${headlineSize}px ${fontPreset.family}`;
+  const sublineFont = `${fontPreset.sublineStyle} ${fontPreset.sublineWeight} ${sublineSize}px ${fontPreset.family}`;
 
   ctx.textBaseline = 'top';
 

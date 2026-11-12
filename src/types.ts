@@ -23,6 +23,8 @@ export type ImageAnchor = 'top' | 'center' | 'bottom';
 
 export type ImageAlign = 'left' | 'center' | 'right';
 
+export type ImageFontId = 'manrope' | 'lora' | 'inter' | 'playfair' | 'space';
+
 export interface Platform {
   id: PlatformId;
   name: string;
@@ -55,6 +57,7 @@ export interface ImageText {
   enabled: boolean;
   anchor: ImageAnchor;
   align: ImageAlign;
+  font: ImageFontId;
 }
 
 export interface PhotoStats {

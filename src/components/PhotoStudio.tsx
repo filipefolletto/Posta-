@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { FILTER_PRESETS, FILTER_PRESET_MAP, pickPreset } from '../data/filters';
 import {
+  IMAGE_FONTS,
+  IMAGE_FONT_MAP,
+  isImageFontId,
+  recommendedFontFor,
+} from '../data/fonts';
+import {
   defaultFormatFor,
   IMAGE_FORMAT_IDS,
   IMAGE_FORMATS,
@@ -13,20 +19,20 @@ import {
   type RenderOptions,
 } from '../lib/image';
 import type {
+  Brief,
   FilterPresetId,
   ImageAlign,
   ImageAnchor,
   ImageFormat,
   ImageText,
   PhotoAsset,
-  PlatformId,
 } from '../types';
 import { Icon } from './Icon';
 
 interface PhotoStudioProps {
   photos: PhotoAsset[];
   initialText: ImageText;
-  platform: PlatformId;
+  brief: Brief;
   onNotify: (text: string, kind: 'success' | 'error' | 'info') => void;
 }
 
@@ -45,14 +51,20 @@ const ALIGNS: { id: ImageAlign; label: string }[] = [
 export function PhotoStudio({
   photos,
   initialText,
-  platform,
+  brief,
   onNotify,
 }: PhotoStudioProps) {
+  const recommendedFontId = recommendedFontFor(brief);
   const [activeIndex, setActiveIndex] = useState(0);
   const [presetId, setPresetId] = useState<FilterPresetId>(() => pickPreset(photos));
   const [intensity, setIntensity] = useState(0.82);
-  const [text, setText] = useState<ImageText>(initialText);
-  const [format, setFormat] = useState<ImageFormat>(() => defaultFormatFor(platform));
+  const [text, setText] = useState<ImageText>(() => ({
+    ...initialText,
+    font: isImageFontId(initialText.font) ? initialText.font : recommendedFontId,
+  }));
+  const [format, setFormat] = useState<ImageFormat>(() =>
+    defaultFormatFor(brief.platform),
+  );
   const [showOriginal, setShowOriginal] = useState(false);
   const [exporting, setExporting] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -66,12 +78,15 @@ export function PhotoStudio({
   }, [photoKey]);
 
   useEffect(() => {
-    setText(initialText);
-  }, [initialText]);
+    setText({
+      ...initialText,
+      font: isImageFontId(initialText.font) ? initialText.font : recommendedFontId,
+    });
+  }, [initialText, recommendedFontId]);
 
   useEffect(() => {
-    setFormat(defaultFormatFor(platform));
-  }, [platform]);
+    setFormat(defaultFormatFor(brief.platform));
+  }, [brief.platform]);
 
   useEffect(() => {
     if (activeIndex >= photos.length) setActiveIndex(0);
@@ -191,6 +206,8 @@ export function PhotoStudio({
   }
 
   const preset = FILTER_PRESET_MAP[presetId];
+  const selectedFont = IMAGE_FONT_MAP[text.font] ?? IMAGE_FONT_MAP.manrope;
+  const recommendedFont = IMAGE_FONT_MAP[recommendedFontId];
 
   return (
     <section className="photo-studio" aria-label="Imagem do post">
@@ -369,6 +386,42 @@ export function PhotoStudio({
                 ))}
               </div>
             </div>
+          </div>
+
+          <div className="studio-group">
+            <div className="studio-label-row">
+              <span className="studio-label">Fonte do texto</span>
+              <button
+                type="button"
+                className="text-btn"
+                onClick={() => setText({ ...text, font: recommendedFontId })}
+                disabled={text.font === recommendedFontId}
+              >
+                <Icon name="sparkles" size={12} />
+                Usar sugerida: {recommendedFont.name}
+              </button>
+            </div>
+            <div className="font-row">
+              {IMAGE_FONTS.map((font) => (
+                <button
+                  key={font.id}
+                  type="button"
+                  className={`font-chip${text.font === font.id ? ' is-active' : ''}`}
+                  onClick={() => setText({ ...text, font: font.id })}
+                  aria-pressed={text.font === font.id}
+                  style={{ fontFamily: font.family }}
+                >
+                  <span className="font-chip-sample">Aa</span>
+                  <span className="font-chip-name">{font.name}</span>
+                  {font.id === recommendedFontId && (
+                    <span className="font-chip-badge">Sugerida</span>
+                  )}
+                </button>
+              ))}
+            </div>
+            <p className="studio-hint">
+              {selectedFont.description} A sugestão acompanha plataforma e tom do post.
+            </p>
           </div>
 
           <div className="studio-group">

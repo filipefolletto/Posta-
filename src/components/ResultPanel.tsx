@@ -184,7 +184,7 @@ function ReadyState({
         <PhotoStudio
           photos={photos}
           initialText={post.imageText}
-          platform={post.brief.platform}
+          brief={post.brief}
           onNotify={onNotify}
         />
       )}

@@ -1320,6 +1320,68 @@
   border-radius: 50%;
 }
 
+.font-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.font-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+  font-weight: var(--fw-semibold);
+  transition:
+    background var(--dur-2) var(--ease),
+    border-color var(--dur-2) var(--ease),
+    color var(--dur-2) var(--ease);
+}
+
+.font-chip:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.font-chip.is-active {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--text-brand);
+}
+
+.font-chip-sample {
+  font-size: 0.95rem;
+  font-weight: var(--fw-bold);
+  line-height: 1;
+}
+
+.font-chip-name {
+  font-size: 0.6875rem;
+  font-weight: var(--fw-semibold);
+}
+
+.font-chip-badge {
+  padding: 0.08rem 0.28rem;
+  border-radius: 3px;
+  background: var(--surface-sunken);
+  color: var(--text-subtle);
+  font-family: var(--font-body);
+  font-size: 0.5rem;
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.font-chip.is-active .font-chip-badge {
+  background: var(--surface);
+  color: var(--text-brand);
+}
+
 .intensity-row {
   display: flex;
   align-items: center;

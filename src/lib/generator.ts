@@ -1,3 +1,4 @@
+import { recommendedFontFor } from '../data/fonts';
 import type {
   AudienceId,
   Brief,
@@ -425,6 +426,7 @@ export function generateImageText(brief: Brief, variant = 0): ImageText {
     enabled: true,
     anchor: 'bottom',
     align: 'left',
+    font: recommendedFontFor(brief),
   };
 }
 
