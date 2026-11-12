@@ -11,6 +11,7 @@ import {
   IMAGE_FORMAT_IDS,
   IMAGE_FORMATS,
 } from '../data/formats';
+import { analyzePhotosWithAI } from '../lib/ai';
 import {
   downloadBlob,
   exportPhoto,
@@ -34,6 +35,7 @@ interface PhotoStudioProps {
   initialText: ImageText;
   brief: Brief;
   onNotify: (text: string, kind: 'success' | 'error' | 'info') => void;
+  aiEnabled: boolean;
 }
 
 const ANCHORS: { id: ImageAnchor; label: string }[] = [
@@ -53,6 +55,7 @@ export function PhotoStudio({
   initialText,
   brief,
   onNotify,
+  aiEnabled,
 }: PhotoStudioProps) {
   const recommendedFontId = recommendedFontFor(brief);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -67,15 +70,97 @@ export function PhotoStudio({
   );
   const [showOriginal, setShowOriginal] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [analysisSource, setAnalysisSource] = useState<
+    'local' | 'ai' | 'loading' | 'manual'
+  >('local');
+  const [analysisReason, setAnalysisReason] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const notifyRef = useRef(onNotify);
+  const fontTouchedRef = useRef(false);
+  const layoutTouchedRef = useRef(false);
+  const presetTouchedRef = useRef(false);
+  const fallbackNoticeRef = useRef('');
 
   const photoKey = photos.map((photo) => photo.id).join('|');
+  const briefKey = [
+    brief.platform,
+    brief.tones.join(','),
+    brief.audience,
+    brief.topic,
+  ].join('|');
   const activePhoto = photos[Math.min(activeIndex, photos.length - 1)];
 
   useEffect(() => {
-    setPresetId(pickPreset(photos));
+    notifyRef.current = onNotify;
+  }, [onNotify]);
+
+  useEffect(() => {
     setActiveIndex(0);
-  }, [photoKey]);
+    presetTouchedRef.current = false;
+    setPresetId(pickPreset(photos));
+    setAnalysisReason('');
+    setAnalysisSource('local');
+
+    if (!aiEnabled || photos.length === 0) return;
+
+    const controller = new AbortController();
+    let cancelled = false;
+    const analysisKey = `${photoKey}|${briefKey}`;
+    setAnalysisSource('loading');
+
+    analyzePhotosWithAI(photos, brief, {
+      enabled: true,
+      signal: controller.signal,
+    })
+      .then((result) => {
+        if (cancelled) return;
+
+        if (!presetTouchedRef.current) {
+          setPresetId(result.presetId);
+          setAnalysisReason(result.reason);
+          setAnalysisSource(result.source);
+        } else {
+          setAnalysisSource('manual');
+        }
+
+        if (result.source === 'ai') {
+          if (!fontTouchedRef.current || !layoutTouchedRef.current) {
+            setText((current) => ({
+              ...current,
+              ...(fontTouchedRef.current ? {} : { font: result.font }),
+              ...(layoutTouchedRef.current
+                ? {}
+                : { anchor: result.anchor, align: result.align }),
+            }));
+          }
+        } else if (fallbackNoticeRef.current !== analysisKey) {
+          fallbackNoticeRef.current = analysisKey;
+          notifyRef.current(
+            result.notice ?? 'IA de visão indisponível; usei a análise local das fotos.',
+            'info',
+          );
+        }
+      })
+      .catch(() => {
+        if (cancelled) return;
+
+        setAnalysisSource(presetTouchedRef.current ? 'manual' : 'local');
+        setAnalysisReason('');
+
+        if (fallbackNoticeRef.current !== analysisKey) {
+          fallbackNoticeRef.current = analysisKey;
+          notifyRef.current(
+            'IA de visão indisponível; usei a análise local das fotos.',
+            'info',
+          );
+        }
+      });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [aiEnabled, brief, briefKey, photoKey, photos]);
 
   useEffect(() => {
     setText({
@@ -216,8 +301,15 @@ export function PhotoStudio({
           <span className="section-overline">Imagem do post</span>
           <h3>Sua foto, com o filtro e o texto certos</h3>
         </div>
-        <span className="studio-ai-badge">
-          <Icon name="wand" size={13} /> IA escolheu {preset.name}
+        <span className="studio-ai-badge" aria-live="polite">
+          <Icon name="wand" size={13} />{' '}
+          {analysisSource === 'loading'
+            ? 'IA analisando as fotos…'
+            : analysisSource === 'ai'
+              ? `IA real escolheu ${preset.name}`
+              : analysisSource === 'manual'
+                ? `Ajuste manual: ${preset.name}`
+                : `IA local escolheu ${preset.name}`}
         </span>
       </div>
 
@@ -289,7 +381,12 @@ export function PhotoStudio({
           <div className="studio-group">
             <div className="studio-label-row">
               <span className="studio-label">Filtro</span>
-              <span className="studio-hint">{preset.description}</span>
+              <span className="studio-hint">
+                {preset.description}
+                {analysisSource === 'ai' && analysisReason
+                  ? ` ${analysisReason}`
+                  : ''}
+              </span>
             </div>
             <div className="filter-row">
               {FILTER_PRESETS.map((item) => (
@@ -297,7 +394,12 @@ export function PhotoStudio({
                   key={item.id}
                   type="button"
                   className={`filter-chip${item.id === presetId ? ' is-active' : ''}`}
-                  onClick={() => setPresetId(item.id)}
+                  onClick={() => {
+                    presetTouchedRef.current = true;
+                    setPresetId(item.id);
+                    setAnalysisSource('manual');
+                    setAnalysisReason('');
+                  }}
                   aria-pressed={item.id === presetId}
                 >
                   <span
@@ -365,7 +467,10 @@ export function PhotoStudio({
                     key={anchor.id}
                     type="button"
                     className={text.anchor === anchor.id ? 'is-active' : ''}
-                    onClick={() => setText({ ...text, anchor: anchor.id })}
+                    onClick={() => {
+                      layoutTouchedRef.current = true;
+                      setText({ ...text, anchor: anchor.id });
+                    }}
                     aria-pressed={text.anchor === anchor.id}
                   >
                     {anchor.label}
@@ -378,7 +483,10 @@ export function PhotoStudio({
                     key={align.id}
                     type="button"
                     className={text.align === align.id ? 'is-active' : ''}
-                    onClick={() => setText({ ...text, align: align.id })}
+                    onClick={() => {
+                      layoutTouchedRef.current = true;
+                      setText({ ...text, align: align.id });
+                    }}
                     aria-pressed={text.align === align.id}
                   >
                     {align.label}
@@ -394,7 +502,10 @@ export function PhotoStudio({
               <button
                 type="button"
                 className="text-btn"
-                onClick={() => setText({ ...text, font: recommendedFontId })}
+                onClick={() => {
+                  fontTouchedRef.current = true;
+                  setText({ ...text, font: recommendedFontId });
+                }}
                 disabled={text.font === recommendedFontId}
               >
                 <Icon name="sparkles" size={12} />
@@ -407,7 +518,10 @@ export function PhotoStudio({
                   key={font.id}
                   type="button"
                   className={`font-chip${text.font === font.id ? ' is-active' : ''}`}
-                  onClick={() => setText({ ...text, font: font.id })}
+                  onClick={() => {
+                    fontTouchedRef.current = true;
+                    setText({ ...text, font: font.id });
+                  }}
                   aria-pressed={text.font === font.id}
                   style={{ fontFamily: font.family }}
                 >
@@ -421,6 +535,11 @@ export function PhotoStudio({
             </div>
             <p className="studio-hint">
               {selectedFont.description} A sugestão acompanha plataforma e tom do post.
+              {analysisSource === 'ai' &&
+              !fontTouchedRef.current &&
+              text.font !== recommendedFontId
+                ? ' A IA de visão ajustou a fonte para esta foto.'
+                : ''}
             </p>
           </div>
 

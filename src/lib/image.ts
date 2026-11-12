@@ -64,6 +64,43 @@ export function releasePhoto(id: string, url: string): void {
   styledCache.clear();
 }
 
+/**
+ * Gera uma versão comprimida da foto para enviar à análise de visão.
+ * A imagem original nunca sai do navegador; só este JPEG reduzido é enviado
+ * quando a IA real está configurada.
+ */
+export async function photoToDataUrl(
+  photo: PhotoAsset,
+  maxEdge = 640,
+): Promise<string> {
+  const normalized = normalizedCache.get(photo.id);
+  let source: HTMLCanvasElement | HTMLImageElement;
+  let sourceWidth: number;
+  let sourceHeight: number;
+
+  if (normalized) {
+    source = normalized.canvas;
+    sourceWidth = normalized.canvas.width;
+    sourceHeight = normalized.canvas.height;
+  } else {
+    const image = await loadImage(photo.url);
+    source = image;
+    sourceWidth = image.naturalWidth;
+    sourceHeight = image.naturalHeight;
+  }
+
+  const scale = Math.min(1, maxEdge / Math.max(sourceWidth, sourceHeight));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(sourceWidth * scale));
+  canvas.height = Math.max(1, Math.round(sourceHeight * scale));
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Não foi possível preparar a foto para a IA.');
+
+  ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL('image/jpeg', 0.72);
+}
+
 export function clearImageCache(): void {
   normalizedCache.clear();
   styledCache.clear();

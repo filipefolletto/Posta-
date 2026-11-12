@@ -7,6 +7,11 @@ import { Icon } from './components/Icon';
 import { ResultPanel } from './components/ResultPanel';
 import { Toast } from './components/Toast';
 import { MAX_PHOTOS } from './components/PhotoUploader';
+import {
+  generatePostWithAI,
+  getAiStatus,
+  type AiStatus,
+} from './lib/ai';
 import { copyText } from './lib/clipboard';
 import { generatePost } from './lib/generator';
 import { clearImageCache, preparePhoto, releasePhoto } from './lib/image';
@@ -59,6 +64,7 @@ export default function App() {
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [photos, setPhotos] = useState<PhotoAsset[]>([]);
   const [photosBusy, setPhotosBusy] = useState(false);
+  const [aiStatus, setAiStatus] = useState<AiStatus | null>(null);
 
   const pendingRef = useRef<{ brief: Brief; variant: number } | null>(null);
   const photosRef = useRef<PhotoAsset[]>([]);
@@ -68,6 +74,19 @@ export default function App() {
     document.documentElement.dataset.theme = theme;
     saveTheme(theme);
   }, [theme]);
+
+  /* Status da IA ---------------------------------------------------------- */
+  useEffect(() => {
+    let active = true;
+
+    getAiStatus().then((status) => {
+      if (active) setAiStatus(status);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   /* Avisos ---------------------------------------------------------------- */
   useEffect(() => {
@@ -87,9 +106,14 @@ export default function App() {
     };
   }, []);
 
-  /* Geração simulada ------------------------------------------------------ */
+  /* Geração com IA real ou fallback local --------------------------------- */
   useEffect(() => {
     if (status !== 'generating') return;
+
+    const pending = pendingRef.current;
+    if (!pending) return;
+
+    const { brief: pendingBrief, variant: pendingVariant } = pending;
 
     setStatusMessage(LOADING_MESSAGES[0]);
     let index = 0;
@@ -99,28 +123,60 @@ export default function App() {
       setStatusMessage(LOADING_MESSAGES[index]);
     }, MESSAGE_MS);
 
-    const finishTimer = window.setTimeout(() => {
-      const pending = pendingRef.current;
-      if (!pending) return;
+    const controller = new AbortController();
+    let cancelled = false;
+    const startedAt = Date.now();
 
-      const next = generatePost(pending.brief, pending.variant);
-      pendingRef.current = null;
+    async function finish() {
+      try {
+        const result = await generatePostWithAI(pendingBrief, pendingVariant, {
+          enabled: aiStatus?.enabled ?? false,
+          signal: controller.signal,
+        });
 
-      setPost(next);
-      savePost(next);
-      setStatus('ready');
-      setToast({
-        id: Date.now(),
-        text: 'Post pronto para revisar.',
-        kind: 'success',
-      });
-    }, GENERATION_MS);
+        const remaining = Math.max(0, GENERATION_MS - (Date.now() - startedAt));
+        if (remaining > 0) {
+          await new Promise((resolve) => window.setTimeout(resolve, remaining));
+        }
+
+        if (cancelled) return;
+
+        pendingRef.current = null;
+        setPost(result.post);
+        savePost(result.post);
+        setStatus('ready');
+        setToast({
+          id: Date.now(),
+          text:
+            result.source === 'ai'
+              ? 'Post gerado com IA real. Pronto para revisar.'
+              : (result.notice ?? 'Demonstração local: post pronto para revisar.'),
+          kind: result.source === 'ai' ? 'success' : 'info',
+        });
+      } catch {
+        if (cancelled) return;
+
+        const fallback = generatePost(pendingBrief, pendingVariant);
+        pendingRef.current = null;
+        setPost(fallback);
+        savePost(fallback);
+        setStatus('ready');
+        setToast({
+          id: Date.now(),
+          text: 'Não foi possível falar com a IA; usei o gerador local.',
+          kind: 'info',
+        });
+      }
+    }
+
+    finish();
 
     return () => {
+      cancelled = true;
+      controller.abort();
       window.clearInterval(messageTimer);
-      window.clearTimeout(finishTimer);
     };
-  }, [status]);
+  }, [aiStatus?.enabled, status]);
 
   /* Handlers -------------------------------------------------------------- */
   function updateBrief(next: Brief) {
@@ -294,6 +350,7 @@ export default function App() {
             onRemovePhoto={handleRemovePhoto}
             onMakeCover={handleMakeCover}
             onResetQuota={handleResetQuota}
+            aiEnabled={aiStatus?.enabled ?? false}
           />
           <ResultPanel
             status={status}
@@ -306,6 +363,7 @@ export default function App() {
             onGenerate={handleSubmit}
             onNew={handleNew}
             onUseExample={handleUseExample}
+            aiEnabled={aiStatus?.enabled ?? false}
           />
         </section>
       </main>
@@ -323,9 +381,9 @@ export default function App() {
           </div>
 
           <p className="footer-note">
-            Demonstração com IA simulada — legenda, hashtags, CTA, ideia de imagem
-            e tratamento das fotos acontecem localmente no navegador. Nenhum dado
-            sai daqui.
+            {aiStatus?.enabled
+              ? 'IA real conectada — o briefing e até 3 fotos comprimidas são enviados ao provedor para gerar o post. A chave fica protegida no servidor; as fotos não são armazenadas.'
+              : 'Demonstração local — legenda, hashtags, CTA, ideia de imagem e tratamento das fotos acontecem no navegador. Nenhum dado sai daqui.'}
           </p>
 
           <div className="footer-meta">

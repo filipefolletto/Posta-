@@ -17,6 +17,7 @@ interface ResultPanelProps {
   onGenerate: () => void;
   onNew: () => void;
   onUseExample: (topic: string) => void;
+  aiEnabled: boolean;
 }
 
 export function ResultPanel({
@@ -30,6 +31,7 @@ export function ResultPanel({
   onGenerate,
   onNew,
   onUseExample,
+  aiEnabled,
 }: ResultPanelProps) {
   return (
     <aside className="result-panel" id="resultado" aria-busy={status === 'generating'}>
@@ -57,6 +59,7 @@ export function ResultPanel({
           onNotify={onNotify}
           onRetry={onRetry}
           onNew={onNew}
+          aiEnabled={aiEnabled}
         />
       )}
 
@@ -145,6 +148,7 @@ function ReadyState({
   onNotify,
   onRetry,
   onNew,
+  aiEnabled,
 }: {
   post: GeneratedPost;
   photos: PhotoAsset[];
@@ -152,6 +156,7 @@ function ReadyState({
   onNotify: (text: string, kind: 'success' | 'error' | 'info') => void;
   onRetry: () => void;
   onNew: () => void;
+  aiEnabled: boolean;
 }) {
   const platform = PLATFORM_MAP[post.brief.platform];
   const tones = post.brief.tones.map((tone) => TONE_MAP[tone]);
@@ -186,6 +191,7 @@ function ReadyState({
           initialText={post.imageText}
           brief={post.brief}
           onNotify={onNotify}
+          aiEnabled={aiEnabled}
         />
       )}
 

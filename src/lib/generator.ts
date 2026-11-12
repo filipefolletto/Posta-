@@ -9,14 +9,15 @@ import type {
 } from '../types';
 
 /* ========================================================================== */
-/*  POSTAÍ — gerador local (mock)                                             */
+/*  POSTAÍ — gerador local (fallback)                                        */
 /*                                                                            */
-/*  Este arquivo simula a camada de IA do produto. Ele combina estruturas     */
-/*  por plataforma, repertório por tom de voz e o briefing do usuário para    */
-/*  devolver uma legenda plausível, hashtags, CTA e ideia de imagem.          */
+/*  Este arquivo mantém o app funcionando sem IA real. Ele combina            */
+/*  estruturas por plataforma, repertório por tom de voz e o briefing do      */
+/*  usuário para devolver uma legenda plausível, hashtags, CTA e ideia de     */
+/*  imagem.                                                                    */
 /*                                                                            */
-/*  Para plugar uma IA real depois, basta trocar `generatePost` por uma      */
-/*  chamada de API que devolva o mesmo contrato `GeneratedPost`.              */
+/*  Quando a IA está configurada, `src/lib/ai.ts` chama o servidor e usa      */
+/*  este gerador apenas se a chamada falhar ou for desativada.                */
 /* ========================================================================== */
 
 const STOPWORDS = new Set(

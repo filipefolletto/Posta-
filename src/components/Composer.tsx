@@ -29,6 +29,7 @@ interface ComposerProps {
   onRemovePhoto: (id: string) => void;
   onMakeCover: (id: string) => void;
   onResetQuota: () => void;
+  aiEnabled: boolean;
 }
 
 export function Composer({
@@ -43,6 +44,7 @@ export function Composer({
   onRemovePhoto,
   onMakeCover,
   onResetQuota,
+  aiEnabled,
 }: ComposerProps) {
   const [errors, setErrors] = useState<FormErrors>({});
   const [exampleIndex, setExampleIndex] = useState(0);
@@ -243,7 +245,10 @@ export function Composer({
             )}
           </button>
           <p className="demo-note">
-            <Icon name="info" size={13} /> Demonstração local — as legendas são montadas no navegador.
+            <Icon name="info" size={13} />{' '}
+            {aiEnabled
+              ? 'IA real conectada — a legenda é gerada no servidor, com a chave protegida.'
+              : 'Demonstração local — as legendas são montadas no navegador.'}
           </p>
         </div>
 
